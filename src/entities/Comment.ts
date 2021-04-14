@@ -12,7 +12,7 @@ import Entity from "./Entity";
 import Tip from "./Tip";
 import User from "./User";
 
-@TOEntity("tips")
+@TOEntity("comments")
 export default class Comment extends Entity {
   constructor(comment: Partial<Comment>) {
     super();
@@ -26,7 +26,6 @@ export default class Comment extends Entity {
   @Column()
   body: string;
 
-  @Index()
   @Column()
   username: string;
 
@@ -34,7 +33,7 @@ export default class Comment extends Entity {
   @JoinColumn({ name: "username", referencedColumnName: "username" })
   user: User;
 
-  @ManyToOne(() => Tip, (tip) => tip.comments)
+  @ManyToOne(() => Tip, (tip) => tip.comments, { nullable: false })
   tip: Tip;
 
   @BeforeInsert()

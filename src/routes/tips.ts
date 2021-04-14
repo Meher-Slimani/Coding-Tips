@@ -3,6 +3,7 @@ import { Request, Response, Router } from "express";
 import auth from "../middleware/auth";
 import Tip from "../entities/Tip";
 import Sub from "../entities/Sub";
+import Comment from "../entities/Comment";
 
 const createTip = async (req: Request, res: Response) => {
   const { title, body, sub } = req.body;
@@ -46,9 +47,7 @@ const getTip = async (req: Request, res: Response) => {
   try {
     const tip = await Tip.findOneOrFail(
       { identifier, slug },
-      {
-        relations: ["sub"],
-      }
+      { relations: ["sub"] }
     );
 
     return res.json(tip);
@@ -58,10 +57,32 @@ const getTip = async (req: Request, res: Response) => {
   }
 };
 
+const commentOnTip = async (req: Request, res: Response) => {
+  const { identifier, slug } = req.params;
+  const body = req.body.body;
+  try {
+    const tip = await Tip.findOneOrFail({ identifier, slug });
+
+    const comment = new Comment({
+      body,
+      user: res.locals.user,
+      tip,
+    });
+
+    await comment.save();
+
+    return res.json(comment);
+  } catch (err) {
+    console.log(err);
+    return res.status(404).json({ error: "Post not found" });
+  }
+};
+
 const router = Router();
 
 router.post("/", auth, createTip);
 router.get("/", getTips);
 router.get("/:identifier/:slug", getTip);
+router.post("/:identifier/:slug/comments", auth, commentOnTip);
 
 export default router;
